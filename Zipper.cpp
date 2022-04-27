@@ -10,6 +10,8 @@ void Zipper::compress(std::string fileName)
 
 	std::vector<int>repeats;
 
+	bool checkIfCompressed = false;
+
 	file.open(fileName);
 
 	if(!file)
@@ -30,9 +32,23 @@ void Zipper::compress(std::string fileName)
 		std::string word;
 
 		int counter = 1;
-
+		
 		while(ssLine >> word)
 		{
+			if(checkIfCompressed == false)
+			{
+				for(size_t i = 0;i < word.length();++i)
+				{
+					if(std::isdigit(word[i]) == 1)
+					{
+						std::cout << "File is already compressed." << std::endl;
+						exit(1);
+					}
+				}
+
+				checkIfCompressed = true;
+			}
+
 			for(size_t i = 0;i < word.length(); ++i)
 			{
 				if(word[i] == word[i + 1])
@@ -76,6 +92,8 @@ void Zipper::decompress(std::string fileName)
 
 	std::vector<std::string>repeatsCount;
 	
+	bool checkIfDecompressed = false;
+
 	std::string line;
 
 	file.open(fileName);
@@ -101,6 +119,19 @@ void Zipper::decompress(std::string fileName)
 
 		while(ssLine >> word)
 		{
+			if(checkIfDecompressed == false)
+			{
+				//if word's second index doesn't contain digit that means we got decompressed file
+
+				if(std::isdigit(word[1]) == 0)
+				{
+					std::cout << "File is already decompressed." << std::endl;
+					exit(1);
+				}	
+			}
+
+			checkIfDecompressed = true;
+
 			std::ostringstream repeats;
 			std::ostringstream unzippedString;		
 
