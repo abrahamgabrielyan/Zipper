@@ -2,15 +2,13 @@
 
 void Zipper::compress(std::string fileName)
 {
-	std::ofstream fileZipped("zipped.txt", std::ios::app);
+	std::ofstream fileZipped("zipped.txt",std::ios::app);
 
 	std::ifstream file;
 
 	std::string line;
 
 	std::vector<int>repeats;
-
-	bool checkIfCompressed = false;
 
 	file.open(fileName);
 
@@ -31,34 +29,27 @@ void Zipper::compress(std::string fileName)
 		std::stringstream ssLine(line);
 		std::string word;
 
-		int counter = 1;
+		int counter = 0;
 		
 		while(ssLine >> word)
 		{
-			if(checkIfCompressed == false)
-			{
-				for(size_t i = 0;i < word.length();++i)
-				{
-					if(std::isdigit(word[i]) == 1)
-					{
-						std::cout << "File is already compressed." << std::endl;
-						exit(1);
-					}
-				}
-
-				checkIfCompressed = true;
-			}
-
 			for(size_t i = 0;i < word.length(); ++i)
 			{
+				if(std::isdigit(word[i]))
+				{
+					std::cout << "File is already compressed." << std::endl;
+					exit(1);
+				}
+
 				if(word[i] == word[i + 1])
 				{
-					counter++;
+					++counter;
 				}
 				else
 				{
-					repeats.push_back(counter);
-					counter = 1;
+					repeats.push_back(counter + 1);
+
+					counter = 0;
 				}
 			}
 
@@ -70,7 +61,10 @@ void Zipper::compress(std::string fileName)
 			{	
 				if(std::isdigit(word[i]) == 0)
 				{
-					word.insert(i + 1, std::to_string(repeats[index]));
+					if(repeats[index] != 1)
+					{
+						word.insert(i + 1, std::to_string(repeats[index]));
+					}
 					++index;
 				}
 			}
@@ -82,6 +76,8 @@ void Zipper::compress(std::string fileName)
 	}
 
 	file.close();
+
+	std::cout << "Operation completed successful. Created 'zipped.txt'." << std::endl;
 }
 
 void Zipper::decompress(std::string fileName)
@@ -119,23 +115,10 @@ void Zipper::decompress(std::string fileName)
 
 		while(ssLine >> word)
 		{
-			if(checkIfDecompressed == false)
-			{
-				//if word's second index doesn't contain digit that means we got decompressed file
-
-				if(std::isdigit(word[1]) == 0)
-				{
-					std::cout << "File is already decompressed." << std::endl;
-					exit(1);
-				}	
-			}
-
-			checkIfDecompressed = true;
-
 			std::ostringstream repeats;
 			std::ostringstream unzippedString;		
 
-			for(size_t i = 0; i < word.length() + 1; ++i)
+			for(size_t i = 1; i < word.length() + 1; ++i)
 			{
 				if(std::isdigit(word[i]) == 1)
 				{
@@ -143,7 +126,11 @@ void Zipper::decompress(std::string fileName)
 				}
 				else
 				{
-					if(!(repeats.str()).empty())			
+					if((repeats.str()).empty() == true)
+					{
+						repeatsCount.push_back("0");
+					}
+					else
 					{
 						repeatsCount.push_back(repeats.str());
 						repeats.str("");
@@ -160,18 +147,34 @@ void Zipper::decompress(std::string fileName)
         				--i;
     				}
 			}			
+			
+			if(bool zeros = std::all_of(repeatsCount.begin(), repeatsCount.end(), [](std::string i) { return i=="0"; }))
+            {
+                std::cout << "File is already decompressed." << std::endl;
+                exit(1);
+            }
 
-			for(size_t i = 0;i < word.length();++i)
+			for(size_t i = 0;i < word.length(); ++i)
 			{
-				for(int j = 0;j < stoi(repeatsCount[index]);++j)
+				if(repeatsCount[index] != "0")
+				{
+					for(int j = 0;j < stoi(repeatsCount[index]);++j)
+					{
+						unzippedString << word[i];
+					}
+					++index;
+				}
+				else
 				{
 					unzippedString << word[i];
+					++index;
 				}
-				++index;
 			}
 
 			fileUnzipped << unzippedString.str() << std::endl;
 		}	
 	}
 	file.close();
+
+	std::cout << "Operation successful. Created 'unzipped.txt'." << std::endl;
 }
